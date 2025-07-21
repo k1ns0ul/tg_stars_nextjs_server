@@ -5,8 +5,8 @@ import dotenv from 'dotenv';
 import path from 'path';
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-const token = process.env.TOKEN
-const webAppUrl = process.env.WEBAPPURL
+const token = '8101783883:AAFK39sE4PPqyfhhyBUcsqQWPFZCOXxhQjA'
+const webAppUrl = 'https://tg-stars-nextjs-client.vercel.app/'
 
 if (!token) {
     throw new Error('TOKEN не найден в переменных окружения');
@@ -18,8 +18,7 @@ if (!webAppUrl) {
 
 const bot = new TelegramBot(token, {polling : true })
 
-
-const PORT = process.env.PORT || 8000;
+const PORT = 8000;
 const app = express();
 app.use(express.json());
 app.use(cors());
@@ -111,7 +110,8 @@ app.post('/create-invoice', async (req, res) => {
             prices: [{ 
                 label: 'итого', 
                 amount: Math.floor(totalPrice)
-            }]
+            }],
+            start_parameter: "start_parameter" 
         };
 
         console.log('Данные для API (строго по документации):', JSON.stringify(invoiceData, null, 2));
