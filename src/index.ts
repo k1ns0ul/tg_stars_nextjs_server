@@ -86,48 +86,62 @@ bot.on('pre_checkout_query', async (query : any) => {
     }
 });
 
-app.post('/create-invoice', async (req : any, res : any) => {
+app.post('/create-invoice', async (req, res) => {
     try {
         const { products, totalPrice, queryId, userId } = req.body;
         
         console.log('создание инвойса:', { products, totalPrice, queryId, userId });
 
-        const invoicePayload = {
-            products: products,
-            userId: userId || 'unknown',
+        const shortPayload = JSON.stringify({
             orderId: Date.now().toString(),
-            queryId: queryId
+            userId: userId || 'unknown'
+        });
+        
+        if (Buffer.byteLength(shortPayload, 'utf8') > 128) {
+            console.error('Payload слишком длинный:', Buffer.byteLength(shortPayload, 'utf8'), 'байт');
+            return res.status(400).json({ error: 'Payload слишком длинный' });
+        }
+
+        const invoiceData = {
+            title: 'покупка товаров', 
+            description: `кол-во ${products.length} товаров`, 
+            payload: shortPayload, 
+            provider_token: '', 
+            currency: 'XTR', 
+            prices: [{ 
+                label: 'итого', 
+                amount: Math.floor(totalPrice)
+            }]
         };
+
+        console.log('Данные для API (строго по документации):', JSON.stringify(invoiceData, null, 2));
+        console.log('Размер payload:', Buffer.byteLength(shortPayload, 'utf8'), 'байт');
 
         const response = await fetch(`https://api.telegram.org/bot${token}/createInvoiceLink`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                title: 'покупка товаров',
-                description: `кол-во ${products.length} товаров`,
-                payload: JSON.stringify(invoicePayload), 
-                provider_token: '',
-                currency: 'XTR',    
-                prices: [{ label: 'итого', amount: totalPrice }],
-                start_parameter: "start_parameter" 
-            })
+            body: JSON.stringify(invoiceData)
         });
         
         const data = await response.json();
         
+        console.log('Ответ от Telegram API:');
+        console.log('Status:', response.status);
+        console.log('Response:', JSON.stringify(data, null, 2));
+        
         if (!data.ok) {
-            console.error('Ошибка от Telegram API:', data);
+            console.error('ОШИБКА от Telegram API:', data.description);
             return res.status(400).json({ 
                 error: 'Ошибка создания инвойса', 
-                details: data.description || 'Неизвестная ошибка' 
+                details: data.description 
             });
         }
         
         res.json({ invoice_link: data.result });
 
-    } catch (error) {
+    } catch (error : any) {
         console.error('ошибка создания инвойса:', error);
-        res.status(500).json({ error: 'ошибка создания инвойса' });
+        res.status(500).json({ error: 'ошибка создания инвойса: ' + error.message });
     }
 });
 
