@@ -114,14 +114,14 @@ app.post('/create-invoice', async (req, res) => {
         const invoiceData = {
             title: 'покупка товаров',
             description: `кол-во ${products.length} товаров`,
-            payload: payload, 
+            payload: payload,
             provider_token: '', 
             currency: 'XTR',
             prices: [{ 
                 label: 'итого', 
                 amount: totalPrice 
             }],
-            start_parameter: 'start_parameter' 
+            start_parameter: 'start_parameter'
         };
 
         console.log('Данные для API:', JSON.stringify(invoiceData, null, 2));
