@@ -85,6 +85,13 @@ bot.on('pre_checkout_query', async (query) => {
     }
 });
 
+app.use(cors({
+    origin: ['https://tg-stars-nextjs-client.vercel.app', 'https://web.telegram.org'],
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+}));
+
 app.post('/create-invoice', async (req, res) => {
     try {
         const { products, totalPrice, queryId, userId } = req.body;
