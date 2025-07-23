@@ -22,7 +22,6 @@ const bot = new TelegramBot(token, { polling: true });
 const PORT = 8000;
 const app = express();
 app.use(express.json());
-app.use(cors());
 
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
